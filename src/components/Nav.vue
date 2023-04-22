@@ -7,7 +7,7 @@ const rail = ref(true)
 </script>
 
 <template>
-  <VNavigationDrawer :rail="rail" permanent @click="rail = false" rail-width="110">
+  <VNavigationDrawer :rail="rail" permanent rail-width="110">
     <VList>
       <VListItem>
         <div class="app-logo center-container">
@@ -23,7 +23,7 @@ const rail = ref(true)
     </VList>
 
     <VList>
-      <div class="data-cointainer">
+      <VListItem class="data-cointainer">
         <div class="prof-container center-container">
           <img src="https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png">
         </div>
@@ -40,7 +40,7 @@ const rail = ref(true)
           <ContData :num="16000" name="Followers" />
           <ContData :num="2500" name="Following" />
         </div>
-      </div>
+      </VListItem>
     </VList>
 
     <template v-slot:append>
@@ -96,8 +96,11 @@ const rail = ref(true)
 }
 
 .account-activity {
+  width: 100%;
+  margin-top: 20px;
   padding: 0 15px;
-  justify-content: space-between;
+  justify-content: space-evenly;
+  gap: 20px;
 }
 
 .vlist-container {
