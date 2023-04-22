@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import ContData from './ContData.vue'
+import LogOutButton from './LogOutButton.vue'
 
+import { userCredentials } from "../stores/userCred"
+
+const userLog = userCredentials()
 const rail = ref(true)
 
 </script>
@@ -25,17 +29,20 @@ const rail = ref(true)
     <VList>
       <VListItem class="data-cointainer">
         <div class="prof-container center-container">
-          <img src="https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png">
+          <img v-if="userLog.userLogged"
+            src="https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png"><!-- TODO - adicionar perfil do usuário logado -->
+          <img v-else src="https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png">
         </div>
 
         <div v-if="!rail" class="user-data center-container ">
-          <p class="name">User</p>
-          <p class="username">@username</p>
+          <p v-if="userLog.userLogged" class="name">User</p>
+          <p v-if="userLog.userLogged" class="username">@username</p>
+          <p v-else class="usernam">Login to your account!</p>
         </div>
 
         <v-divider></v-divider>
 
-        <div v-if="!rail" class="account-activity center-container">
+        <div v-if="!rail && userLog.userLogged" class="account-activity center-container">
           <ContData :num="140" name="Pubs" />
           <ContData :num="16000" name="Followers" />
           <ContData :num="2500" name="Following" />
@@ -44,9 +51,7 @@ const rail = ref(true)
     </VList>
 
     <template v-slot:append>
-      <div class="log-out">
-        <VBtn prepend-icon="mdi-logout" variant="tonal" color="black" rounded="xl">{{ !rail ? 'Logout' : '' }}</VBtn>
-      </div>
+      <LogOutButton :rail="rail"/>
     </template>
   </VNavigationDrawer>
 </template>

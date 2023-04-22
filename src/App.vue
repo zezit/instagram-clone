@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
+
 import LeftNav from "./components/Nav.vue"
 import TopNav from "./components/TopNav.vue"
+
+import { userCredentials } from "./stores/userCred"
+
+const userLog = userCredentials()
 
 const dialog = ref(false)
 const blurBackground = ref(false)
@@ -24,11 +29,6 @@ function toggleDialog() {
   </VCard>
   <v-row justify="center">
     <v-dialog v-model="dialog" persistent width="1024" @click:outside="blurBackground = false">
-      <template v-slot:activator="{ props }">
-        <v-btn color="primary" v-bind="props" @click="toggleDialog()">
-          Open Dialog
-        </v-btn>
-      </template>
       <v-card>
         <v-card-title>
           <span class="text-h5">Login</span>

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { userCredentials } from "../stores/userCred"
+import LogOutButton from './LogOutButton.vue'
 
+const userLog = userCredentials()
 const search = ref("")
 
 const searchUser = (): void => {
@@ -20,12 +23,16 @@ const color = "primary"
         </VTextField>
 
         <template class="flex-align-center buttons" v-slot:append>
-            <v-btn class="flex-align-center" icon="mdi-bell-outline" variant="text"></v-btn>
-            <v-btn class="flex-align-center" icon="mdi-send-variant-outline" variant="text"></v-btn>
-            <v-btn class="flex-align-center upload-image" prepend-icon="mdi-progress-upload" variant="tonal" color="white"
-                rounded="xl">Upload
+            <v-btn v-if="userLog.userLogged" class="flex-align-center" icon="mdi-bell-outline" variant="text"></v-btn>
+            <v-btn v-if="userLog.userLogged" class="flex-align-center" icon="mdi-send-variant-outline"
+                variant="text"></v-btn>
+            <v-btn v-if="userLog.userLogged" class="flex-align-center upload-image" prepend-icon="mdi-progress-upload"
+                variant="tonal" color="white" rounded="xl">Upload
                 Image</v-btn>
-            <v-btn class="flex-align-center prof" icon="mdi-account-circle-outline" variant="text"></v-btn>
+            <v-btn v-if="userLog.userLogged" class="flex-align-center prof" icon="mdi-account-circle-outline"
+                variant="text"></v-btn>
+
+            <LogOutButton v-else="userLog.userLogged" :rail="false"/>
         </template>
     </VAppBar>
 </template>
