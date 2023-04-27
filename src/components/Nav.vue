@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import ContData from './ContData.vue'
-import LogOutButton from './LogOutButton.vue'
+import LogButton from './LogButton.vue'
 
 import { userCredentials } from "../stores/userCred"
 
@@ -29,20 +29,20 @@ const rail = ref(true)
     <VList>
       <VListItem class="data-cointainer">
         <div class="prof-container center-container">
-          <img v-if="userLog.userLogged"
+          <img v-if="userLog.user"
             src="https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png"><!-- TODO - adicionar perfil do usuário logado -->
           <img v-else src="https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png">
         </div>
 
         <div v-if="!rail" class="user-data center-container ">
-          <p v-if="userLog.userLogged" class="name">User</p>
-          <p v-if="userLog.userLogged" class="username">@username</p>
+          <p v-if="userLog.user" class="name">User</p>
+          <p v-if="userLog.user" class="username">@username</p>
           <p v-else class="usernam">Login to your account!</p>
         </div>
 
         <v-divider></v-divider>
 
-        <div v-if="!rail && userLog.userLogged" class="account-activity center-container">
+        <div v-if="!rail && userLog.user" class="account-activity center-container">
           <ContData :num="140" name="Pubs" />
           <ContData :num="16000" name="Followers" />
           <ContData :num="2500" name="Following" />
@@ -51,7 +51,7 @@ const rail = ref(true)
     </VList>
 
     <template v-slot:append>
-      <LogOutButton :rail="rail"/>
+      <LogButton :rail="rail"/>
     </template>
   </VNavigationDrawer>
 </template>
