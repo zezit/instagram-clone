@@ -7,12 +7,8 @@ const userLog = userCredentials()
 const search = ref("")
 
 const searchUser = (): void => {
-    if (!search.value) return
-
-    alert(search.value)
 }
 
-const color = "primary"
 </script>
 
 <template>
@@ -31,7 +27,7 @@ const color = "primary"
             <v-btn v-if="userLog.user" class="flex-align-center prof" icon="mdi-account-circle-outline"
                 variant="text"></v-btn>
 
-            <LogButton v-else="userLog.user" :rail="false" />
+            <LogButton v-else="userLog.user" :rail="false" @click="userLog.toggleDialog" />
         </template>
     </VAppBar>
 </template>

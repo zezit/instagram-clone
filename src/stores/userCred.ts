@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+
 interface User {
   username: string,
   email: string,
@@ -8,7 +9,16 @@ interface User {
 
 export const userCredentials = defineStore('userLog', () => {
   const user = ref<User | null>(null)
+  const newUser = ref<boolean>(false)
   const errorMessage = ref<String>("")
+  const dialog = ref<boolean>(false)
+  const blurBackground = ref<boolean>(false)
+
+
+  const toggleDialog = (): void => {
+    // dialog.value = !dialog.value
+    blurBackground.value = !blurBackground.value
+  }
 
   function validarSenha(senha: string): boolean {
     if (senha.length < 8) {
@@ -82,5 +92,5 @@ export const userCredentials = defineStore('userLog', () => {
 
   const getUser = () => { }
 
-  return { user, handleLogin, handleSignup, handleLogout, getUser, errorMessage }
+  return { user, handleLogin, handleSignup, handleLogout, getUser, errorMessage, newUser, dialog, blurBackground, toggleDialog }
 })

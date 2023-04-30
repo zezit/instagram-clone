@@ -12,7 +12,6 @@ import App from './App.vue'
 import router from './router'
 
 import './assets/main.css'
-import 'ant-design-vue/dist/antd.css'
 
 
 const vuetify = createVuetify({

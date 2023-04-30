@@ -51,7 +51,7 @@ const rail = ref(true)
     </VList>
 
     <template v-slot:append>
-      <LogButton :rail="rail"/>
+      <LogButton :rail="rail" @click="userLog.toggleDialog" />
     </template>
   </VNavigationDrawer>
 </template>

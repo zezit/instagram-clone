@@ -9,7 +9,6 @@ interface Props {
 const props = defineProps<Props>()
 const getNum = (): string => props.num > 1000 ? `${props.num / 1000}k` : `${props.num}`
 
-
 </script>
 <template>
     <div class="cont-data">
