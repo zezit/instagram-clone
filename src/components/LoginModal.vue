@@ -1,10 +1,18 @@
 <script setup lang='ts'>
-import { ref } from 'vue'
+import { reactive, computed } from 'vue'
 import gsap from "gsap"
+import { storeToRefs } from 'pinia'
 
-import { userCredentials } from "../stores/userCred"
+import { userCredentials, User } from "../stores/userCred"
 
 const userLog = userCredentials()
+const { user } = userLog
+
+const { newUser, errorMessage } = storeToRefs(userLog)
+
+defineProps<{
+    userCredent: User
+}>()
 
 const enterAnimation = (element) => {
     gsap.fromTo(element,
@@ -18,32 +26,37 @@ const enterAnimation = (element) => {
         <v-container>
             <v-row>
                 <TransitionGroup appear @before-enter="enterAnimation">
-                    <v-col cols="12" sm="6" md="4" v-if="userLog.newUser" :key="0" :data-index="0">
-                        <v-text-field label="First name*" required></v-text-field>
+                    <v-col cols="12" sm="6" md="4" v-if="newUser" :key="0" :data-index="0">
+                        <v-text-field v-model.trim="userCredent.fName" label="First name*" required></v-text-field>
                     </v-col>
-                    <v-col cols="12" sm="6" md="4" v-if="userLog.newUser" :key="1" :data-index="1">
-                        <v-text-field label="Last name*" required></v-text-field>
+                    <v-col cols="12" sm="6" md="4" v-if="newUser" :key="1" :data-index="1">
+                        <v-text-field v-model.trim="userCredent.lName" label="Last name*" required></v-text-field>
                     </v-col>
-                    <v-col cols="12" v-if="!userLog.newUser" :key="2" :data-index="2">
-                        <v-text-field label="Email or username*" required></v-text-field>
+                    <v-col cols="12" v-if="newUser" :key="3" :data-index="3">
+                        <v-text-field v-model.trim="userCredent.username" label="Username*" required></v-text-field>
                     </v-col>
-                    <v-col cols="12" v-if="userLog.newUser" :key="3" :data-index="3">
-                        <v-text-field label="Username*" required></v-text-field>
-                    </v-col>
-                    <v-col cols="12" v-if="userLog.newUser" :key="4" :data-index="4">
-                        <v-text-field label="Email*" required></v-text-field>
+                    <v-col cols="12" :key="4" :data-index="4">
+                        <v-text-field v-model.trim="userCredent.email" label="Email*" required></v-text-field>
                     </v-col>
                     <v-col cols="12" :key="5" :data-index="5">
-                        <v-text-field label="Password*" type="password" required></v-text-field>
+                        <v-text-field v-model.trim="userCredent.password" label="Password*" type="password"
+                            required></v-text-field>
                     </v-col>
                 </TransitionGroup>
             </v-row>
         </v-container>
 
+        <Transition name="error">
+            <p v-if="errorMessage.length > 0" class="errorc">
+                {{ errorMessage }}
+            </p>
+        </Transition>
+
         <small>*indicates required field</small>
-        <p class="userlog" @click="userLog.newUser = !userLog.newUser"><small>
-                {{ userLog.newUser ? 'Existent account' : 'Create new user' }}
+        <p class="userlog" @click="newUser = !newUser"><small>
+                {{ newUser ? 'Existent account' : 'Create new user' }}
             </small></p>
+
     </div>
 </template>
 
@@ -62,5 +75,22 @@ const enterAnimation = (element) => {
 .slide-enter,
 .slide-leave-to {
     transform: translateX(100%);
+}
+
+.error-enter-active,
+.error-leave-active {
+    transition: transform 0.3s;
+}
+
+.error-enter,
+.error-leave-to,
+.error-enter-from {
+    transform: translateX(-100%);
+}
+
+.errorc {
+    color: red;
+    font-weight: 400;
+    margin: 10px 0;
 }
 </style>

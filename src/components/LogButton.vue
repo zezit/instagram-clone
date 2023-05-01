@@ -1,20 +1,67 @@
 <script setup lang='ts'>
-import { ref } from "vue"
+import { ref, reactive } from "vue"
 import LoginModal from "./LoginModal.vue"
+import { userCredentials, User } from "../stores/userCred"
 
-import { userCredentials } from "../stores/userCred"
+import { storeToRefs } from "pinia"
 
 const userLog = userCredentials()
+const { errorMessage, newUser } = storeToRefs(userLog)
 
 const showModal = ref<boolean>()
+const userCredent = reactive<User>({
+    email: "",
+    username: "",
+    password: "",
+    fName: "",
+    lName: ""
+})
+
+enum Type {
+    CLOSE,
+    SIGN
+}
 
 defineProps<{
     rail: boolean
 }>()
 
-const closeWindow = () => {
-    showModal.value = false
-    userLog.toggleDialog()
+const clearInputs = () => {
+    userCredent.username = ""
+    userCredent.fName = ""
+    userCredent.lName = ""
+}
+
+const closeWindow = async (type: Type) => {
+    errorMessage.value = ""
+
+    if (type === Type.SIGN) {
+        if (newUser) {
+            // use bolean await to check if user is created
+            const check = await userLog.handleSignup(userCredent)
+            if (!check) {
+                return
+            } else {
+                clearInputs()
+                newUser.value = false
+                return
+            }
+        }
+
+        const user = await userLog.handleLogin(userCredent)
+        if (!user) {
+            return
+        } else {
+            userLog.toggleDialog()
+            showModal.value = false
+        }
+    }
+
+    else {
+        clearInputs()
+        userLog.toggleDialog()
+        showModal.value = false
+    }
 }
 
 const redirectUser = (): void => {
@@ -41,15 +88,15 @@ const redirectUser = (): void => {
                 </v-card-title>
 
                 <v-card-text>
-                    <LoginModal @close="closeWindow" />
+                    <LoginModal @close="closeWindow" :userCredent="userCredent" />
                 </v-card-text>
 
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn variant="tonal" color="black" rounded="xl" @click="closeWindow">
+                    <v-btn variant="tonal" color="black" rounded="xl" @click="closeWindow(Type.CLOSE)">
                         Close
                     </v-btn>
-                    <v-btn variant="tonal" color="black" rounded="xl" @click="closeWindow">
+                    <v-btn variant="tonal" color="black" rounded="xl" @click="closeWindow(Type.SIGN)">
                         {{ userLog.newUser ? 'SignUp' : 'LogIn' }}
                     </v-btn>
                 </v-card-actions>

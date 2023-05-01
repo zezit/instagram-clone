@@ -6,9 +6,11 @@ import { userCredentials } from "../stores/userCred"
 import LeftNav from "../components/Nav.vue"
 import TopNav from "../components/TopNav.vue"
 
+import {storeToRefs} from 'pinia'
+
 const userLog = userCredentials()
 
-const blurBackground = computed(() => userLog.blurBackground)
+const {blurBackground} = storeToRefs(userLog)
 
 </script>
 

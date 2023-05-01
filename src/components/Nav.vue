@@ -8,6 +8,10 @@ import { userCredentials } from "../stores/userCred"
 const userLog = userCredentials()
 const rail = ref(true)
 
+const logbutton = () => {
+  userLog.toggleDialog
+}
+
 </script>
 
 <template>
@@ -50,9 +54,9 @@ const rail = ref(true)
       </VListItem>
     </VList>
 
-    <template v-slot:append>
-      <LogButton :rail="rail" @click="userLog.toggleDialog" />
-    </template>
+    <!-- <template v-slot:append>
+      <LogButton :rail="rail" @click="logbutton" />
+    </template> -->
   </VNavigationDrawer>
 </template>
 
