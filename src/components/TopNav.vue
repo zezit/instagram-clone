@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
+
 import { userCredentials } from "../stores/userCred"
 import LogButton from './LogButton.vue'
 
 const userLog = userCredentials()
+// get user from stroref
+const { user } = storeToRefs(userLog)
+const { toggleDialog } = userLog
+
 const search = ref("")
 
 const searchUser = (): void => {
@@ -19,15 +25,14 @@ const searchUser = (): void => {
         </VTextField>
 
         <template class="flex-align-center buttons" v-slot:append>
-            <v-btn v-if="userLog.user" class="flex-align-center" icon="mdi-bell-outline" variant="text"></v-btn>
-            <v-btn v-if="userLog.user" class="flex-align-center" icon="mdi-send-variant-outline" variant="text"></v-btn>
-            <v-btn v-if="userLog.user" class="flex-align-center upload-image" prepend-icon="mdi-progress-upload"
-                variant="tonal" color="white" rounded="xl">Upload
+            <v-btn v-if="user" class="flex-align-center" icon="mdi-bell-outline" variant="text"></v-btn>
+            <v-btn v-if="user" class="flex-align-center" icon="mdi-send-variant-outline" variant="text"></v-btn>
+            <v-btn v-if="user" class="flex-align-center upload-image" prepend-icon="mdi-progress-upload" variant="tonal"
+                color="white" rounded="xl">Upload
                 Image</v-btn>
-            <v-btn v-if="userLog.user" class="flex-align-center prof" icon="mdi-account-circle-outline"
-                variant="text"></v-btn>
+            <v-btn v-if="user" class="flex-align-center prof" icon="mdi-account-circle-outline" variant="text"></v-btn>
 
-            <LogButton v-else="userLog.user" :rail="false" @click="userLog.toggleDialog" />
+            <LogButton v-else :rail="false" @click="toggleDialog" />
         </template>
     </VAppBar>
 </template>

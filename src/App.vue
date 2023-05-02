@@ -1,5 +1,14 @@
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import { RouterView } from 'vue-router'
+import { userCredentials } from './stores/userCred'
+
+const userLog = userCredentials()
+const { getUser } = userLog
+
+onMounted(() => {
+  getUser()
+})
 
 </script>
 

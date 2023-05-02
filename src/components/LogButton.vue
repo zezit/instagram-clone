@@ -9,6 +9,8 @@ const userLog = userCredentials()
 const { errorMessage, newUser } = storeToRefs(userLog)
 
 const showModal = ref<boolean>()
+const loadingValues = ref<boolean>()
+
 const userCredent = reactive<User>({
     email: "",
     username: "",
@@ -33,27 +35,35 @@ const clearInputs = () => {
 }
 
 const closeWindow = async (type: Type) => {
+    userLog.getUser()
     errorMessage.value = ""
 
     if (type === Type.SIGN) {
-        if (newUser) {
-            // use bolean await to check if user is created
+
+        if (newUser.value) {
+            loadingValues.value = true
+
             const check = await userLog.handleSignup(userCredent)
             if (!check) {
+                loadingValues.value = false
                 return
             } else {
                 clearInputs()
                 newUser.value = false
+                loadingValues.value = false
                 return
             }
         }
 
         const user = await userLog.handleLogin(userCredent)
+
         if (!user) {
+            loadingValues.value = false
             return
         } else {
             userLog.toggleDialog()
             showModal.value = false
+            loadingValues.value = false
         }
     }
 
@@ -81,7 +91,7 @@ const redirectUser = (): void => {
             {{ !rail ? userLog.user ? 'Logout' : 'Login' : '' }}
         </v-btn>
 
-        <v-dialog v-model="showModal" persistent width="1024">
+        <v-dialog v-model="showModal" persistent width="1024" :loading="loadingValues">
             <v-card>
                 <v-card-title>
                     <span class="text-h5">{{ userLog.newUser ? 'Signup' : 'Login' }}</span>

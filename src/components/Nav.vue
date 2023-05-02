@@ -1,15 +1,25 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
+
 import ContData from './ContData.vue'
 import LogButton from './LogButton.vue'
 
 import { userCredentials } from "../stores/userCred"
 
 const userLog = userCredentials()
+const { user } = storeToRefs(userLog)
+const { toggleDialog } = userLog
+
 const rail = ref(true)
 
 const logbutton = () => {
-  userLog.toggleDialog
+  if (user.value) {
+    userLog.handleLogout()
+    return
+  }
+
+  toggleDialog
 }
 
 </script>
@@ -33,20 +43,20 @@ const logbutton = () => {
     <VList>
       <VListItem class="data-cointainer">
         <div class="prof-container center-container">
-          <img v-if="userLog.user"
+          <img v-if="user"
             src="https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png"><!-- TODO - adicionar perfil do usuário logado -->
           <img v-else src="https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png">
         </div>
 
         <div v-if="!rail" class="user-data center-container ">
-          <p v-if="userLog.user" class="name">User</p>
-          <p v-if="userLog.user" class="username">@username</p>
+          <p v-if="user" class="name">{{ `${user.fName} ${user.lName}` }}</p>
+          <p v-if="user" class="username">@{{ user.username }}</p>
           <p v-else class="usernam">Login to your account!</p>
         </div>
 
         <v-divider></v-divider>
 
-        <div v-if="!rail && userLog.user" class="account-activity center-container">
+        <div v-if="!rail && user" class="account-activity center-container">
           <ContData :num="140" name="Pubs" />
           <ContData :num="16000" name="Followers" />
           <ContData :num="2500" name="Following" />
@@ -54,9 +64,9 @@ const logbutton = () => {
       </VListItem>
     </VList>
 
-    <!-- <template v-slot:append>
-      <LogButton :rail="rail" @click="logbutton" />
-    </template> -->
+    <template v-slot:append>
+      <LogButton :rail="rail" @click="logbutton" v-if="user" />
+    </template>
   </VNavigationDrawer>
 </template>
 

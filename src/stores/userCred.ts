@@ -21,6 +21,7 @@ export const userCredentials = defineStore('userLog', () => {
 
   const toggleDialog = (): void => {
     blurBackground.value = !blurBackground.value
+    newUser.value = !blurBackground.value ? false : newUser.value
   }
 
   function validarSenha(senha: string): boolean {
@@ -127,43 +128,36 @@ export const userCredentials = defineStore('userLog', () => {
       .single()
 
     if (data) {
-      if (user.value) {
-        user.value.email = data.email
-        user.value.username = data.username
-        user.value.fName = data.fname
-        user.value.lName = data.lname
-      }
+      user.value = {} as User
+      user.value.username = data.username
+      user.value.fName = data.fname
+      user.value.lName = data.lname
+      user.value.email = data.email
     }
 
     return true
   }
 
   const handleSignup = async (credentials: User): Promise<boolean> => {
-
     const { username, email, password, fName, lName } = credentials
 
     if (!validateEmail(email)) {
-      console.log("returning false")
       return false
     }
 
     if (!validateUsername(username)) {
-      console.log("returning false")
       return false
     }
 
     if (!validarSenha(password)) {
-      console.log("returning false")
       return false
     }
 
     if (!validarFName(fName)) {
-      console.log("returning false")
       return false
     }
 
     if (!validarLName(lName)) {
-      console.log("returning false")
       return false
     }
 
@@ -176,7 +170,6 @@ export const userCredentials = defineStore('userLog', () => {
 
     if (data) {
       errorMessage.value = "Username already exists!"
-      console.log("returning false")
       return false
     }
 
@@ -189,7 +182,6 @@ export const userCredentials = defineStore('userLog', () => {
 
     if (data2) {
       errorMessage.value = "Email already exists!"
-      console.log("returning false")
       return false
     }
 
@@ -200,7 +192,6 @@ export const userCredentials = defineStore('userLog', () => {
 
     if (error3) {
       errorMessage.value = error3.message
-      console.log("returning false")
       return false
     }
 
@@ -211,13 +202,34 @@ export const userCredentials = defineStore('userLog', () => {
       email: email
     })
 
-    console.log("returning true")
     return true
   }
 
-  const handleLogout = () => { }
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    user.value = null
+  }
 
-  const getUser = () => { }
+  const getUser = async () => {
+    const resp = await supabase.auth.getUser()
+
+    if (!resp.data.user) return user.value = null
+
+    const { data: userWithEmail } = await supabase
+      .from('users')
+      .select('username, fname, lname, email')
+      .eq('email', resp.data.user?.email)
+      .single()
+
+    if (userWithEmail) {
+      user.value = {} as User
+      user.value.username = userWithEmail.username
+      user.value.fName = userWithEmail.fname
+      user.value.lName = userWithEmail.lname
+      user.value.email = userWithEmail.email
+    }
+
+  }
 
   return { user, handleLogin, handleSignup, handleLogout, getUser, errorMessage, newUser, dialog, blurBackground, toggleDialog }
 })
