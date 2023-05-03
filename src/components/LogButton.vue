@@ -35,11 +35,9 @@ const clearInputs = () => {
 }
 
 const closeWindow = async (type: Type) => {
-    userLog.getUser()
     errorMessage.value = ""
 
     if (type === Type.SIGN) {
-
         if (newUser.value) {
             loadingValues.value = true
 

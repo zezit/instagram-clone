@@ -17,6 +17,7 @@ export const userCredentials = defineStore('userLog', () => {
   const errorMessage = ref<String>("")
   const dialog = ref<boolean>(false)
   const blurBackground = ref<boolean>(false)
+  const isAuthenticated = ref<boolean>(false)
 
 
   const toggleDialog = (): void => {
@@ -135,6 +136,10 @@ export const userCredentials = defineStore('userLog', () => {
       user.value.email = data.email
     }
 
+    await supabase.auth.onAuthStateChange((event) => {
+      console.log("event login: " + event)
+    })
+
     return true
   }
 
@@ -205,30 +210,55 @@ export const userCredentials = defineStore('userLog', () => {
     return true
   }
 
+  // prevent user from losing session on page refresh
   const handleLogout = async () => {
     await supabase.auth.signOut()
     user.value = null
+
+    await supabase.auth.onAuthStateChange((event) => {
+      console.log("event logout: " + event)
+    })
+
+    // console.log("autentication before: " + isAuthenticated.value)
+
+    // await supabase.auth.onAuthStateChange((event, session) => {
+    //   if (event === 'SIGNED_OUT') {
+    //     // delete cookies on sign out
+    //     const expires = new Date(0).toUTCString()
+    //     document.cookie = `my-access-token=; path=/; expires=${expires}; SameSite=Lax; secure`
+    //     document.cookie = `my-refresh-token=; path=/; expires=${expires}; SameSite=Lax; secure`
+    //     isAuthenticated.value = false
+    //   }
+    // })
+
+    // console.log("autentication after: " + isAuthenticated.value)
   }
 
+  // get user on page load only if user didn't logout
   const getUser = async () => {
-    const resp = await supabase.auth.getUser()
+    await supabase.auth.onAuthStateChange((event) => {
+      console.log("event getUser: " + event)
+    })
 
-    if (!resp.data.user) return user.value = null
+    if (isAuthenticated.value) {
+      const resp = await supabase.auth.getUser()
 
-    const { data: userWithEmail } = await supabase
-      .from('users')
-      .select('username, fname, lname, email')
-      .eq('email', resp.data.user?.email)
-      .single()
+      if (resp) {
+        const { data } = await supabase
+          .from('users')
+          .select('username, fname, lname, email')
+          .eq('email', resp.data.user?.email)
+          .single()
 
-    if (userWithEmail) {
-      user.value = {} as User
-      user.value.username = userWithEmail.username
-      user.value.fName = userWithEmail.fname
-      user.value.lName = userWithEmail.lname
-      user.value.email = userWithEmail.email
+        if (data) {
+          user.value = {} as User
+          user.value.username = data.username
+          user.value.fName = data.fname
+          user.value.lName = data.lname
+          user.value.email = data.email
+        }
+      }
     }
-
   }
 
   return { user, handleLogin, handleSignup, handleLogout, getUser, errorMessage, newUser, dialog, blurBackground, toggleDialog }

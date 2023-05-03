@@ -15,6 +15,7 @@ const rail = ref(true)
 
 const logbutton = () => {
   if (user.value) {
+    console.log("logout");
     userLog.handleLogout()
     return
   }
