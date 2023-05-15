@@ -11,7 +11,7 @@ export interface User {
 }
 
 export const userCredentials = defineStore('userLog', () => {
-  const user = ref<User | null>()
+  const user = ref<User | null>(null)
 
   const newUser = ref<boolean>(false)
   const errorMessage = ref<String>("")
@@ -129,16 +129,14 @@ export const userCredentials = defineStore('userLog', () => {
       .single()
 
     if (data) {
-      user.value = {} as User
-      user.value.username = data.username
-      user.value.fName = data.fname
-      user.value.lName = data.lname
-      user.value.email = data.email
+      user.value = {
+        username: data.username,
+        email: data.email,
+        password: "",
+        fName: data.fname,
+        lName: data.lname
+      }
     }
-
-    await supabase.auth.onAuthStateChange((event) => {
-      console.log("event login: " + event)
-    })
 
     return true
   }
@@ -212,50 +210,29 @@ export const userCredentials = defineStore('userLog', () => {
 
   // prevent user from losing session on page refresh
   const handleLogout = async () => {
+    const { data, error } = await supabase.auth.getSession()
+
     await supabase.auth.signOut()
     user.value = null
-
-    await supabase.auth.onAuthStateChange((event) => {
-      console.log("event logout: " + event)
-    })
-
-    // console.log("autentication before: " + isAuthenticated.value)
-
-    // await supabase.auth.onAuthStateChange((event, session) => {
-    //   if (event === 'SIGNED_OUT') {
-    //     // delete cookies on sign out
-    //     const expires = new Date(0).toUTCString()
-    //     document.cookie = `my-access-token=; path=/; expires=${expires}; SameSite=Lax; secure`
-    //     document.cookie = `my-refresh-token=; path=/; expires=${expires}; SameSite=Lax; secure`
-    //     isAuthenticated.value = false
-    //   }
-    // })
-
-    // console.log("autentication after: " + isAuthenticated.value)
   }
 
   // get user on page load only if user didn't logout
   const getUser = async () => {
-    await supabase.auth.onAuthStateChange((event) => {
-      console.log("event getUser: " + event)
-    })
+    const { data, error } = await supabase.auth.getSession()
+    if (data.session) {
+      const { data: data2 } = await supabase
+        .from('users')
+        .select('username, fname, lname, email')
+        .eq('email', data.session.user.email)
+        .single()
 
-    if (isAuthenticated.value) {
-      const resp = await supabase.auth.getUser()
-
-      if (resp) {
-        const { data } = await supabase
-          .from('users')
-          .select('username, fname, lname, email')
-          .eq('email', resp.data.user?.email)
-          .single()
-
-        if (data) {
-          user.value = {} as User
-          user.value.username = data.username
-          user.value.fName = data.fname
-          user.value.lName = data.lname
-          user.value.email = data.email
+      if (data2) {
+        user.value = {
+          username: data2.username,
+          email: data.session.user.email ? data.session.user.email : "",
+          password: "",
+          fName: data2.fname,
+          lName: data2.lname
         }
       }
     }

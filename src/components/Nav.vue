@@ -15,7 +15,6 @@ const rail = ref(true)
 
 const logbutton = () => {
   if (user.value) {
-    console.log("logout");
     userLog.handleLogout()
     return
   }
@@ -66,7 +65,7 @@ const logbutton = () => {
     </VList>
 
     <template v-slot:append>
-      <LogButton :rail="rail" @click="logbutton" v-if="user" />
+      <LogButton :rail="rail" @click="logbutton" />
     </template>
   </VNavigationDrawer>
 </template>

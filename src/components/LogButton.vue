@@ -6,7 +6,7 @@ import { userCredentials, User } from "../stores/userCred"
 import { storeToRefs } from "pinia"
 
 const userLog = userCredentials()
-const { errorMessage, newUser } = storeToRefs(userLog)
+const { errorMessage, newUser, blurBackground } = storeToRefs(userLog)
 
 const showModal = ref<boolean>()
 const loadingValues = ref<boolean>()
@@ -62,6 +62,7 @@ const closeWindow = async (type: Type) => {
             userLog.toggleDialog()
             showModal.value = false
             loadingValues.value = false
+            blurBackground.value = false
         }
     }
 
@@ -69,6 +70,7 @@ const closeWindow = async (type: Type) => {
         clearInputs()
         userLog.toggleDialog()
         showModal.value = false
+        blurBackground.value = false
     }
 }
 
