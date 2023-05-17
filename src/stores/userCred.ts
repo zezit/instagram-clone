@@ -7,18 +7,16 @@ export interface User {
   email: string,
   password: string,
   fName: string,
-  lName: string
+  lName: string,
+  profilePicture: string | null
 }
 
 export const userCredentials = defineStore('userLog', () => {
   const user = ref<User | null>(null)
-
   const newUser = ref<boolean>(false)
   const errorMessage = ref<String>("")
   const dialog = ref<boolean>(false)
   const blurBackground = ref<boolean>(false)
-  const isAuthenticated = ref<boolean>(false)
-
 
   const toggleDialog = (): void => {
     blurBackground.value = !blurBackground.value
@@ -124,19 +122,23 @@ export const userCredentials = defineStore('userLog', () => {
     // atualizar user
     const { data } = await supabase
       .from('users')
-      .select('username, fname, lname, email')
+      .select('username, fname, lname, email, profile_pic')
       .eq('email', email)
       .single()
 
-    if (data) {
-      user.value = {
-        username: data.username,
-        email: data.email,
-        password: "",
-        fName: data.fname,
-        lName: data.lname
-      }
+    if (!data) {
+      return false
     }
+    const userData: User = {
+      username: data.username,
+      email: data.email,
+      password: "secret",
+      fName: data.fname,
+      lName: data.lname,
+      profilePicture: data.profile_pic
+    }
+
+    user.value = userData
 
     return true
   }
@@ -210,30 +212,34 @@ export const userCredentials = defineStore('userLog', () => {
 
   // prevent user from losing session on page refresh
   const handleLogout = async () => {
-    const { data, error } = await supabase.auth.getSession()
-
     await supabase.auth.signOut()
+
+    const { data, error } = await supabase.auth.getSession()
     user.value = null
   }
 
   // get user on page load only if user didn't logout
   const getUser = async () => {
     const { data, error } = await supabase.auth.getSession()
+
     if (data.session) {
       const { data: data2 } = await supabase
         .from('users')
-        .select('username, fname, lname, email')
+        .select('username, fname, lname, email, profile_pic')
         .eq('email', data.session.user.email)
         .single()
 
       if (data2) {
-        user.value = {
+        const userData: User = {
           username: data2.username,
           email: data.session.user.email ? data.session.user.email : "",
           password: "",
           fName: data2.fname,
-          lName: data2.lname
+          lName: data2.lname,
+          profilePicture: data2.profile_pic
         }
+
+        user.value = userData
       }
     }
   }

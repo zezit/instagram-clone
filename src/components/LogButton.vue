@@ -6,7 +6,7 @@ import { userCredentials, User } from "../stores/userCred"
 import { storeToRefs } from "pinia"
 
 const userLog = userCredentials()
-const { errorMessage, newUser, blurBackground } = storeToRefs(userLog)
+const { errorMessage, newUser, blurBackground, user } = storeToRefs(userLog)
 
 const showModal = ref<boolean>()
 const loadingValues = ref<boolean>()
@@ -53,9 +53,9 @@ const closeWindow = async (type: Type) => {
             }
         }
 
-        const user = await userLog.handleLogin(userCredent)
+        const userLogin = await userLog.handleLogin(userCredent)
 
-        if (!user) {
+        if (!userLogin) {
             loadingValues.value = false
             return
         } else {

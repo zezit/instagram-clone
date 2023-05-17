@@ -1,25 +1,27 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 
 import ContData from './ContData.vue'
 import LogButton from './LogButton.vue'
 
 import { userCredentials } from "../stores/userCred"
+import router from '../router';
 
 const userLog = userCredentials()
 const { user } = storeToRefs(userLog)
 const { toggleDialog } = userLog
-
 const rail = ref(true)
 
-const logbutton = () => {
-  if (user.value) {
-    userLog.handleLogout()
-    return
-  }
+const route = useRoute()
 
-  toggleDialog
+const logbutton = () => {
+  userLog.handleLogout()
+}
+
+const goToUserProfile = () => {
+  router.push(`/${user.value.username}`)
 }
 
 </script>
@@ -43,9 +45,9 @@ const logbutton = () => {
     <VList>
       <VListItem class="data-cointainer">
         <div class="prof-container center-container">
-          <img v-if="user"
+          <img v-if="user" @click="goToUserProfile"
             src="https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png"><!-- TODO - adicionar perfil do usuário logado -->
-          <img v-else src="https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png">
+          <img v-else class="no-user" src="https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png">
         </div>
 
         <div v-if="!rail" class="user-data center-container ">
@@ -153,5 +155,9 @@ const logbutton = () => {
 .log-out {
   text-align: center;
   margin-bottom: 15px;
+}
+
+.no-user {
+  cursor: auto !important;
 }
 </style>

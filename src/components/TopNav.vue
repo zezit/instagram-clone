@@ -6,7 +6,6 @@ import { userCredentials } from "../stores/userCred"
 import LogButton from './LogButton.vue'
 
 const userLog = userCredentials()
-// get user from stroref
 const { user } = storeToRefs(userLog)
 const { toggleDialog } = userLog
 

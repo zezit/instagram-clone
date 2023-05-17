@@ -6,11 +6,10 @@ import { userCredentials } from "../stores/userCred"
 import LeftNav from "../components/Nav.vue"
 import TopNav from "../components/TopNav.vue"
 
-import {storeToRefs} from 'pinia'
+import { storeToRefs } from 'pinia'
 
 const userLog = userCredentials()
-
-const {blurBackground} = storeToRefs(userLog)
+const { blurBackground } = storeToRefs(userLog)
 
 </script>
 
@@ -22,7 +21,8 @@ const {blurBackground} = storeToRefs(userLog)
             <VLayout>
                 <LeftNav />
                 <TopNav />
-                <VMain style="min-height: 100vh;"></VMain>
+                <VMain style="min-height: 100vh;">
+                </VMain>
             </VLayout>
         </VCard>
     </main>

@@ -21,6 +21,12 @@ onMounted(() => {
 </template>
 
 <style scoped>
+body {
+  background-color: #fff;
+  height: 100vh;
+  width: 100vw;
+}
+
 .route-enter-from {
   opacity: 0;
   transform: translateX(100%);
