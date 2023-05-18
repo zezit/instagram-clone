@@ -1,42 +1,30 @@
 <script setup lang="ts">
-import { userCredentials } from '../stores/userCred'
 import { storeToRefs } from "pinia"
 
+import { userCredentials } from '../stores/userCred'
+import supabase from "../supabase"
+
 import TopNav from "../components/TopNav.vue"
+import { onMounted, ref } from "vue"
+import { useRoute } from "vue-router"
 
 const noPhotoPath: string = "https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png"
 
 const userLog = userCredentials()
-const { user, blurBackground } = storeToRefs(userLog)
+const { geUserPhotos } = userLog
+
+const { user, blurBackground, photos } = storeToRefs(userLog)
+const route = useRoute()
+
+const usernamePage = ref<string | string[] | null>(null)
+const loadingImages = ref<boolean>(false)
 
 const geUserFollowers: number = 100
 const geUserFollowing: number = 100
-const geUserPhotos = [
-    {
-        id: 1,
-        url: "https://picsum.photos/200/200"
-    },
-    {
-        id: 2,
-        url: "https://picsum.photos/500/300"
-    },
-    {
-        id: 3,
-        url: "https://picsum.photos/200/250"
-    },
-    {
-        id: 4,
-        url: "https://picsum.photos/200/350"
-    },
-    {
-        id: 5,
-        url: "https://picsum.photos/200/510"
-    },
-    {
-        id: 6,
-        url: "https://picsum.photos/200/800"
-    },
-]
+
+onMounted(() => {
+    usernamePage.value = route.params.username
+})
 
 </script>
 
@@ -71,9 +59,22 @@ const geUserPhotos = [
 
                         <v-divider style="margin-top: 30px"></v-divider>
 
-                        <v-row class="mt-4 photosAll" v-if="geUserPhotos">
-                            <v-col v-for="photo in geUserPhotos" :key="photo.id" cols="4" sm="3" md="2">
-                                <v-img :src="photo.url" alt="Photo" height="200" width="200" class="pa-2"></v-img>
+                        <v-row class="mt-4 photosAll" v-if="geUserPhotos(usernamePage)">
+                            <v-col v-if="!loadingImages" v-for="photo in photos" :key="photo.url" cols="6" sm="4" md="3"
+                                lg="3" xl="3">
+                                <div class="photo-container">
+                                    <v-img
+                                        :src="`https://djgjxxrclvawttbvoram.supabase.co/storage/v1/object/public/all_photos/${photo.url}`"
+                                        alt="Photo" class="photo-image"></v-img>
+                                    <div class="photo-overlay">
+                                        <v-img :src="photo.url" alt="Photo" class="popup-image"></v-img>
+                                    </div>
+                                </div>
+                            </v-col>
+                            <v-col v-else>
+                                <v-row justify="center" class="spiner" size="x-large">
+                                    <v-progress-circular indeterminate></v-progress-circular>
+                                </v-row>
                             </v-col>
                         </v-row>
                         <v-row justify="center" v-else class="mt-4">
@@ -130,9 +131,63 @@ const geUserPhotos = [
     text-align: center;
 }
 
-.photosAll {
-    padding: 0.5rem !important;
-    margin: 0.5rem !important;
-    display: grid;
+.photo-container {
+    position: relative;
+    margin-bottom: 20px;
+    width: 200px;
+    /* Adjust the default size as desired */
+    height: 200px;
+    /* Adjust the default size as desired */
+}
+
+.photo-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.popup-image {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 90%;
+    max-height: 90%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.photo-container:hover .photo-overlay {
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+.photo-container:hover .popup-image {
+    opacity: 0.5;
+}
+
+@media (max-width: 600px) {
+    .photo-container {
+        margin-bottom: 0;
+        width: 100%;
+        height: auto;
+        padding-bottom: 100%;
+        /* Maintain a square shape */
+    }
+}
+
+.spiner {
+    margin-top: 150px;
 }
 </style>

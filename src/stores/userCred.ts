@@ -11,12 +11,18 @@ export interface User {
   profilePicture: string | null
 }
 
+export interface PhotoData {
+  url: string
+  caption: string
+}
+
 export const userCredentials = defineStore('userLog', () => {
   const user = ref<User | null>(null)
   const newUser = ref<boolean>(false)
   const errorMessage = ref<String>("")
   const dialog = ref<boolean>(false)
   const blurBackground = ref<boolean>(false)
+  const photos = ref<PhotoData[] | []>([])
 
   const toggleDialog = (): void => {
     blurBackground.value = !blurBackground.value
@@ -244,5 +250,31 @@ export const userCredentials = defineStore('userLog', () => {
     }
   }
 
-  return { user, handleLogin, handleSignup, handleLogout, getUser, errorMessage, newUser, dialog, blurBackground, toggleDialog }
+  const geUserPhotos = async (username: string | string[] | null) => {
+    if (!username) return
+
+    const { data } = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', username)
+      .single()
+
+    const photosRet = await supabase
+      .from('photos')
+      .select('url, caption')
+      .eq('owner', data?.id)
+
+    const formatedPhotos: PhotoData[] | undefined = photosRet.data?.map((photo): PhotoData => {
+      return {
+        url: photo.url,
+        caption: photo.caption
+      }
+    })
+
+    photos.value = formatedPhotos ? formatedPhotos : []
+
+    return formatedPhotos
+  }
+
+  return { user, handleLogin, handleSignup, handleLogout, getUser, errorMessage, newUser, dialog, blurBackground, toggleDialog, geUserPhotos, photos }
 })
