@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 
@@ -11,10 +11,12 @@ import router from '../router';
 
 const userLog = userCredentials()
 const { user } = storeToRefs(userLog)
-const { toggleDialog } = userLog
+const { toggleDialog, loadProfilePicture } = userLog
 const rail = ref(true)
 
-const route = useRoute()
+onMounted(() => {
+  loadProfilePicture()
+})
 
 const logbutton = () => {
   userLog.handleLogout()
@@ -46,7 +48,7 @@ const goToUserProfile = () => {
       <VListItem class="data-cointainer">
         <div class="prof-container center-container">
           <img v-if="user" @click="goToUserProfile"
-            src="https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png"><!-- TODO - adicionar perfil do usuário logado -->
+            :src="user.profilePicture ? user.profilePicture : 'https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png'">
           <img v-else class="no-user" src="https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png">
         </div>
 

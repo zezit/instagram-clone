@@ -251,7 +251,7 @@ export const userCredentials = defineStore('userLog', () => {
   }
 
   const geUserPhotos = async (username: string | string[] | null) => {
-    if (!username) return
+    if (!username) return []
 
     const { data } = await supabase
       .from('users')
@@ -276,5 +276,23 @@ export const userCredentials = defineStore('userLog', () => {
     return formatedPhotos
   }
 
-  return { user, handleLogin, handleSignup, handleLogout, getUser, errorMessage, newUser, dialog, blurBackground, toggleDialog, geUserPhotos, photos }
+  const loadProfilePicture = async () => {
+    if (!user.value?.username) return
+
+    const { data } = await supabase
+      .from('users')
+      .select('profile_pic')
+      .eq('username', user.value?.username)
+      .single()
+
+    if (data?.profile_pic) {
+      user.value!.profilePicture = "https://djgjxxrclvawttbvoram.supabase.co/storage/v1/object/public/all_photos/" + data.profile_pic
+    }
+    else {
+      user.value!.profilePicture = null
+    }
+  }
+
+
+  return { user, handleLogin, handleSignup, handleLogout, getUser, errorMessage, newUser, dialog, blurBackground, toggleDialog, geUserPhotos, photos, loadProfilePicture }
 })

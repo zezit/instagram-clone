@@ -14,7 +14,7 @@ interface FileUpload {
 }
 
 const userLog = userCredentials()
-const { geUserPhotos } = userLog
+const { geUserPhotos, loadProfilePicture } = userLog
 const { user } = storeToRefs(userLog)
 const { toggleDialog } = userLog
 const route = useRoute()
@@ -29,8 +29,9 @@ const selectedFile = ref<FileUpload>({
 const errorMessage = ref<string | null>(null)
 const loadingUpload = ref<boolean>(false)
 
-onMounted(() => {
+onMounted(async () => {
     verifyPage(route.name)
+    await loadProfilePicture()
 })
 
 watch(() => route, (value: RouteLocationNormalizedLoaded) => {
@@ -58,7 +59,8 @@ const openUploadPhotoModal = () => {
 
 const cancelUpload = () => {
     showModal.value = false;
-    selectedFile.value = null;
+    selectedFile.value.file = null;
+    selectedFile.value.caption = '';
 }
 
 const handlePhotoUpload = (e) => {
@@ -125,11 +127,14 @@ const uploadPhoto = async () => {
     loadingUpload.value = false
 }
 
-
 const uuid_generate_v4 = (): string => {
     const crypto = window.crypto
     const uuid = crypto.getRandomValues(new Uint32Array(4)).join('-')
     return uuid
+}
+
+const goToOwnProfile = () => {
+    router.push(`/${user.value.username}`)
 }
 </script>
 
@@ -150,9 +155,15 @@ const uuid_generate_v4 = (): string => {
             <v-btn v-if="user" class="flex-align-center upload-image" prepend-icon="mdi-progress-upload" variant="tonal"
                 @click="openUploadPhotoModal" color="white" rounded="xl">Upload
                 Image</v-btn>
-            <v-btn v-if="user" class="flex-align-center prof" icon="mdi-account-circle-outline" variant="text"></v-btn>
+            <div @click="goToOwnProfile()">
+                <v-btn v-if="user && !user.profilePicture" class="flex-align-center prof" icon="mdi-account-circle-outline"
+                    variant="text"></v-btn>
 
-            <LogButton v-else :rail="false" @click="toggleDialog" />
+                <v-btn v-if="user && user.profilePicture" variant="plain" justify="center">
+                    <img class="btn-image" :src="user.profilePicture" alt="Profile Image">
+                </v-btn>
+            </div>
+            <LogButton v-if="!user" :rail="false" @click="toggleDialog" />
         </template>
 
         <v-dialog v-model="showModal" max-width="500px">
@@ -244,5 +255,11 @@ const uuid_generate_v4 = (): string => {
     color: red;
     font-weight: 400;
     margin: 0 0 5px 20px;
+}
+
+.btn-image {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
 }
 </style>

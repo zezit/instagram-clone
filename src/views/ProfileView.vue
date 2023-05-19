@@ -11,20 +11,61 @@ import { useRoute } from "vue-router"
 const noPhotoPath: string = "https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png"
 
 const userLog = userCredentials()
-const { geUserPhotos } = userLog
+const { geUserPhotos, loadProfilePicture } = userLog
 
 const { user, blurBackground, photos } = storeToRefs(userLog)
 const route = useRoute()
 
 const usernamePage = ref<string | string[] | null>(null)
 const loadingImages = ref<boolean>(false)
+const loadingImagesProf = ref<boolean>(false)
+const showEditOverlay = ref<boolean>(false)
+const editModal = ref<boolean>(false)
+const errorMessage = ref<string | null>(null)
 
 const geUserFollowers: number = 100
 const geUserFollowing: number = 100
 
-onMounted(() => {
+onMounted(async () => {
     usernamePage.value = route.params.username
+    await loadProfilePicture()
 })
+
+const openEditModal = async () => {
+    editModal.value = true
+    loadingImagesProf.value = true
+    await geUserPhotos(user.value.username)
+    if (photos.value.length === 0) {
+        loadingImagesProf.value = false
+        editModal.value = false
+    }
+    loadingImagesProf.value = false
+}
+
+const choseProfilePic = async (e) => {
+    loadingImagesProf.value = true
+
+    const { data, error } = await supabase
+        .from('users')
+        .update({
+            profile_pic: e.target.id
+        })
+        .match({
+            username: user.value.username
+        })
+
+    if (error) {
+        errorMessage.value = error.message
+        loadingImagesProf.value = false
+        return
+    }
+
+    user.value.profilePicture = `https://djgjxxrclvawttbvoram.supabase.co/storage/v1/object/public/all_photos/${e.target.id}`
+
+    loadingImagesProf.value = false
+    editModal.value = false
+    errorMessage.value = null
+}
 
 </script>
 
@@ -33,6 +74,44 @@ onMounted(() => {
         'blur-background': blurBackground
     }">
         <VCard>
+            <v-dialog v-model="editModal" max-width="500px">
+                <v-card>
+                    <v-card-title class="headline">Choose Photo</v-card-title>
+                    <v-card-text>
+                        <v-row justify="center">
+                            <v-col v-if="!loadingImagesProf" v-for="photo in photos" :key="photo.url" cols="6" sm="4" md="3"
+                                lg="3" xl="3" class="photo-container" justify="center">
+                                <v-img
+                                    :src="`https://djgjxxrclvawttbvoram.supabase.co/storage/v1/object/public/all_photos/${photo.url}`"
+                                    alt="photo" height="250" width="250" class="photo-image">
+                                </v-img>
+                                <div :id="photo.url" class="photo-overlay" @click="(e) => choseProfilePic(e)">
+                                    <v-img :src="photo.url" alt="Photo" class="popup-image"></v-img>
+                                </div>
+                            </v-col>
+                            <v-col v-else>
+                                <v-row justify="center" class="spiner" size="64">
+                                    <v-progress-circular indeterminate></v-progress-circular>
+                                </v-row>
+                            </v-col>
+                        </v-row>
+                    </v-card-text>
+
+                    <v-card-text>
+                        <Transition name="error">
+                            <p v-if="errorMessage" class="errorc">
+                                {{ errorMessage }}
+                            </p>
+                        </Transition>
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-btn @click="() => {
+                            editModal = false
+                            errorMessage = null
+                        }">Cancel</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
             <VLayout>
                 <TopNav />
                 <VMain style="min-height: 100vh;" class="content">
@@ -40,8 +119,12 @@ onMounted(() => {
                         <v-row align="center">
                             <v-col cols="4" sm="3" md="2">
                                 <v-avatar size="150">
-                                    <img class="profile-pic" :src="user.profilePicture ? user.profilePicture : noPhotoPath"
-                                        alt="Profile Picture" />
+                                    <img @mouseover="showEditOverlay = true" class="profile-pic"
+                                        :src="user.profilePicture ? user.profilePicture : noPhotoPath"
+                                        alt="Profile Picture">
+                                    <div class="edit-overlay" v-if="showEditOverlay" @click="openEditModal">
+                                        <v-icon class="edit-icon">mdi-pencil</v-icon>
+                                    </div>
                                 </v-avatar>
                             </v-col>
                             <v-col cols="8" sm="9" md="10" class="userData">
@@ -71,8 +154,8 @@ onMounted(() => {
                                     </div>
                                 </div>
                             </v-col>
-                            <v-col v-else>
-                                <v-row justify="center" class="spiner" size="x-large">
+                            <v-col v-else class="photo-container" justify="center" cols="6" sm="4" md="3" lg="3" xl="3">
+                                <v-row justify="center" class="spiner" size="64">
                                     <v-progress-circular indeterminate></v-progress-circular>
                                 </v-row>
                             </v-col>
@@ -135,9 +218,7 @@ onMounted(() => {
     position: relative;
     margin-bottom: 20px;
     width: 200px;
-    /* Adjust the default size as desired */
     height: 200px;
-    /* Adjust the default size as desired */
 }
 
 .photo-image {
@@ -183,11 +264,52 @@ onMounted(() => {
         width: 100%;
         height: auto;
         padding-bottom: 100%;
-        /* Maintain a square shape */
     }
 }
 
 .spiner {
     margin-top: 150px;
+}
+
+.edit-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+}
+
+.edit-icon {
+    color: white;
+    font-size: 24px;
+}
+
+.profile-pic:hover+.edit-overlay,
+.edit-overlay:hover {
+    opacity: 1;
+}
+
+.error-enter-active,
+.error-leave-active {
+    transition: transform 0.3s;
+}
+
+.error-enter,
+.error-leave-to,
+.error-enter-from {
+    transform: translateX(-100%);
+}
+
+.errorc {
+    color: red;
+    font-weight: 400;
+    margin: 0 0 5px 20px;
 }
 </style>
