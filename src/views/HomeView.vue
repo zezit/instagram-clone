@@ -28,7 +28,7 @@ const { blurBackground } = storeToRefs(userLog)
     </main>
 </template>
 
-<style scoped>
+<style>
 .blur-background {
     filter: blur(5px);
     transition: filter 0.3s ease-out;

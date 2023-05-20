@@ -7,6 +7,7 @@ import supabase from "../supabase"
 import TopNav from "../components/TopNav.vue"
 import { onMounted, ref } from "vue"
 import { useRoute } from "vue-router"
+import EditProfileModal from "../components/EditProfileModal.vue"
 
 const noPhotoPath: string = "https://static-00.iconduck.com/assets.00/person-icon-473x512-6lsjfavs.png"
 
@@ -18,10 +19,8 @@ const route = useRoute()
 
 const usernamePage = ref<string | string[] | null>(null)
 const loadingImages = ref<boolean>(false)
-const loadingImagesProf = ref<boolean>(false)
 const showEditOverlay = ref<boolean>(false)
 const editModal = ref<boolean>(false)
-const errorMessage = ref<string | null>(null)
 
 const geUserFollowers: number = 100
 const geUserFollowing: number = 100
@@ -31,40 +30,14 @@ onMounted(async () => {
     await loadProfilePicture()
 })
 
-const openEditModal = async () => {
-    editModal.value = true
-    loadingImagesProf.value = true
-    await geUserPhotos(user.value.username)
-    if (photos.value.length === 0) {
-        loadingImagesProf.value = false
-        editModal.value = false
-    }
-    loadingImagesProf.value = false
+const closeEditModal = () => {
+    editModal.value = false
+    blurBackground.value = false
 }
 
-const choseProfilePic = async (e) => {
-    loadingImagesProf.value = true
-
-    const { data, error } = await supabase
-        .from('users')
-        .update({
-            profile_pic: e.target.id
-        })
-        .match({
-            username: user.value.username
-        })
-
-    if (error) {
-        errorMessage.value = error.message
-        loadingImagesProf.value = false
-        return
-    }
-
-    user.value.profilePicture = `https://djgjxxrclvawttbvoram.supabase.co/storage/v1/object/public/all_photos/${e.target.id}`
-
-    loadingImagesProf.value = false
-    editModal.value = false
-    errorMessage.value = null
+const openEditModal = () => {
+    editModal.value = true
+    blurBackground.value = true
 }
 
 </script>
@@ -74,44 +47,8 @@ const choseProfilePic = async (e) => {
         'blur-background': blurBackground
     }">
         <VCard>
-            <v-dialog v-model="editModal" max-width="500px">
-                <v-card>
-                    <v-card-title class="headline">Choose Photo</v-card-title>
-                    <v-card-text>
-                        <v-row justify="center">
-                            <v-col v-if="!loadingImagesProf" v-for="photo in photos" :key="photo.url" cols="6" sm="4" md="3"
-                                lg="3" xl="3" class="photo-container" justify="center">
-                                <v-img
-                                    :src="`https://djgjxxrclvawttbvoram.supabase.co/storage/v1/object/public/all_photos/${photo.url}`"
-                                    alt="photo" height="250" width="250" class="photo-image">
-                                </v-img>
-                                <div :id="photo.url" class="photo-overlay" @click="(e) => choseProfilePic(e)">
-                                    <v-img :src="photo.url" alt="Photo" class="popup-image"></v-img>
-                                </div>
-                            </v-col>
-                            <v-col v-else>
-                                <v-row justify="center" class="spiner" size="64">
-                                    <v-progress-circular indeterminate></v-progress-circular>
-                                </v-row>
-                            </v-col>
-                        </v-row>
-                    </v-card-text>
+            <EditProfileModal v-model="editModal" :closeEditModal="closeEditModal" />
 
-                    <v-card-text>
-                        <Transition name="error">
-                            <p v-if="errorMessage" class="errorc">
-                                {{ errorMessage }}
-                            </p>
-                        </Transition>
-                    </v-card-text>
-                    <v-card-actions>
-                        <v-btn @click="() => {
-                            editModal = false
-                            errorMessage = null
-                        }">Cancel</v-btn>
-                    </v-card-actions>
-                </v-card>
-            </v-dialog>
             <VLayout>
                 <TopNav />
                 <VMain style="min-height: 100vh;" class="content">
@@ -143,17 +80,18 @@ const choseProfilePic = async (e) => {
                         <v-divider style="margin-top: 30px"></v-divider>
 
                         <v-row class="mt-4 photosAll" v-if="geUserPhotos(usernamePage)">
-                            <v-col v-if="!loadingImages" v-for="photo in photos" :key="photo.url" cols="6" sm="4" md="3"
-                                lg="3" xl="3">
-                                <div class="photo-container">
-                                    <v-img
-                                        :src="`https://djgjxxrclvawttbvoram.supabase.co/storage/v1/object/public/all_photos/${photo.url}`"
-                                        alt="Photo" class="photo-image"></v-img>
-                                    <div class="photo-overlay">
-                                        <v-img :src="photo.url" alt="Photo" class="popup-image"></v-img>
+                            <div v-if="!loadingImages" class="allPhotos">
+                                <v-col v-for="photo in photos" :key="photo.url" cols="6" sm="4" md="3" lg="3" xl="3">
+                                    <div class="photo-container">
+                                        <v-img
+                                            :src="`https://djgjxxrclvawttbvoram.supabase.co/storage/v1/object/public/all_photos/${photo.url}`"
+                                            alt="Photo" class="photo-image"></v-img>
+                                        <div class="photo-overlay">
+                                            <v-img :src="photo.url" alt="Photo" class="popup-image"></v-img>
+                                        </div>
                                     </div>
-                                </div>
-                            </v-col>
+                                </v-col>
+                            </div>
                             <v-col v-else class="photo-container" justify="center" cols="6" sm="4" md="3" lg="3" xl="3">
                                 <v-row justify="center" class="spiner" size="64">
                                     <v-progress-circular indeterminate></v-progress-circular>
@@ -296,20 +234,9 @@ const choseProfilePic = async (e) => {
     opacity: 1;
 }
 
-.error-enter-active,
-.error-leave-active {
-    transition: transform 0.3s;
-}
-
-.error-enter,
-.error-leave-to,
-.error-enter-from {
-    transform: translateX(-100%);
-}
-
-.errorc {
-    color: red;
-    font-weight: 400;
-    margin: 0 0 5px 20px;
+.allPhotos{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
 }
 </style>

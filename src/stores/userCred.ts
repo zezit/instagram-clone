@@ -293,6 +293,19 @@ export const userCredentials = defineStore('userLog', () => {
     }
   }
 
+  const getUserFollowers = async () => {
+    // const { data } = await supabase
+    //   .from('users')
+    //   .select('follow_rel')
+    //   .eq('username', user.value?.username)
+    //   .single()
 
-  return { user, handleLogin, handleSignup, handleLogout, getUser, errorMessage, newUser, dialog, blurBackground, toggleDialog, geUserPhotos, photos, loadProfilePicture }
+    // return data?.followers
+  }
+
+  return {
+    user, handleLogin, handleSignup, handleLogout, getUser,
+    errorMessage, newUser, dialog, blurBackground, toggleDialog,
+    geUserPhotos, photos, loadProfilePicture
+  }
 })
